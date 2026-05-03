@@ -22,13 +22,27 @@ app.get('/', (req, res) => {
 });
 
 // Database Connection
-mongoose.connect(process.env.MONGODB_URI)
-    .then(() => {
-        console.log('Connected to MongoDB');
+const connectDB = async () => {
+    try {
+        console.log('Attempting to connect to MongoDB...');
+        await mongoose.connect(process.env.MONGODB_URI);
+        console.log('Connected to MongoDB (Local/Atlas)');
         app.listen(PORT, () => {
             console.log(`Server is running on port ${PORT}`);
         });
-    })
-    .catch((err) => {
-        console.error('MongoDB connection error:', err);
-    });
+    } catch (err) {
+        console.error('Standard MongoDB connection failed:', err.message);
+        console.log('Starting In-Memory Database fallback...');
+        const { MongoMemoryServer } = require('mongodb-memory-server');
+        const mongoServer = await MongoMemoryServer.create();
+        const mongoUri = mongoServer.getUri();
+        
+        await mongoose.connect(mongoUri);
+        console.log('Connected to In-Memory MongoDB (Test Mode)');
+        app.listen(PORT, () => {
+            console.log(`Server is running on port ${PORT} (Test Mode)`);
+        });
+    }
+};
+
+connectDB();

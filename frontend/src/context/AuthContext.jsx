@@ -70,8 +70,20 @@ export const AuthProvider = ({ children }) => {
     toast.success('Logged out');
   };
 
+  const checkout = async (items) => {
+    try {
+      const res = await api.post('/api/auth/checkout', { items });
+      setUser(res.data);
+      toast.success('Purchase successful! Games added to library.');
+      return true;
+    } catch (err) {
+      toast.error('Checkout failed');
+      return false;
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, checkout }}>
       {children}
     </AuthContext.Provider>
   );

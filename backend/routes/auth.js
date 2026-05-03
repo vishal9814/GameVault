@@ -17,17 +17,13 @@ router.post('/register', async (req, res) => {
             return res.status(400).json({ message: 'User already exists' });
         }
 
-        // Create new user
+        // Create new user (password is hashed in pre-save hook)
         user = new User({
             name,
             email,
             password,
             role: role || 'customer'
         });
-
-        // Hash password
-        const salt = await bcrypt.genSalt(10);
-        user.password = await bcrypt.hash(password, salt);
 
         await user.save();
 
@@ -49,7 +45,7 @@ router.post('/register', async (req, res) => {
         );
     } catch (err) {
         console.error(err.message);
-        res.status(500).send('Server error');
+        res.status(500).json({ message: 'Server error' });
     }
 });
 
@@ -62,13 +58,13 @@ router.post('/login', async (req, res) => {
         // Check if user exists
         const user = await User.findOne({ email });
         if (!user) {
-            return res.status(400).json({ message: 'Invalid credentials' });
+            return res.status(401).json({ message: 'Invalid credentials' });
         }
 
-        // Check password
-        const isMatch = await bcrypt.compare(password, user.password);
+        // Check password using model method
+        const isMatch = await user.matchPassword(password);
         if (!isMatch) {
-            return res.status(400).json({ message: 'Invalid credentials' });
+            return res.status(401).json({ message: 'Invalid credentials' });
         }
 
         // Create token
@@ -89,7 +85,7 @@ router.post('/login', async (req, res) => {
         );
     } catch (err) {
         console.error(err.message);
-        res.status(500).send('Server error');
+        res.status(500).json({ message: 'Server error' });
     }
 });
 
@@ -102,6 +98,38 @@ router.get('/me', auth, async (req, res) => {
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');
+    }
+});
+
+// @route   POST /api/auth/checkout
+// @desc    Process purchase and add to library
+router.post('/checkout', auth, async (req, res) => {
+    try {
+        const { items } = req.body;
+        const user = await User.findById(req.user.id);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        // Add items to library
+        items.forEach(item => {
+            // Avoid duplicates in library
+            const exists = user.library.find(g => g.gameId === item.id);
+            if (!exists) {
+                user.library.push({
+                    gameId: item.id,
+                    title: item.title,
+                    image: item.image
+                });
+            }
+        });
+
+        await user.save();
+        res.json(user);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ message: 'Server error during checkout' });
     }
 });
 

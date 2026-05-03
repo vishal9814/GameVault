@@ -4,6 +4,10 @@ import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import About from './pages/About';
+import Community from './pages/Community';
+import Cart from './pages/Cart';
+import Profile from './pages/Profile';
 
 
 const ProtectedRoute = ({ children }) => {
@@ -24,6 +28,10 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/community" element={<Community />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         </Routes>
       </main>
     </div>
