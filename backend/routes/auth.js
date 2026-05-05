@@ -5,12 +5,14 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
 
+
 // @route   POST /api/auth/register
 // @desc    Register a user
 router.post('/register', async (req, res) => {
     try {
         const { name, email, password, role } = req.body;
 
+        console.log('Registration request for:', email);
         // Check if user exists
         let user = await User.findOne({ email });
         if (user) {
@@ -26,6 +28,7 @@ router.post('/register', async (req, res) => {
         });
 
         await user.save();
+        console.log('User saved successfully:', user._id);
 
         // Create token
         const payload = {
@@ -44,6 +47,7 @@ router.post('/register', async (req, res) => {
             }
         );
     } catch (err) {
+        require('fs').appendFileSync('error.log', err.stack + '\n');
         console.error(err.message);
         res.status(500).json({ message: 'Server error' });
     }
@@ -55,6 +59,7 @@ router.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
 
+        console.log('Login attempt for:', email);
         // Check if user exists
         const user = await User.findOne({ email });
         if (!user) {
@@ -132,5 +137,6 @@ router.post('/checkout', auth, async (req, res) => {
         res.status(500).json({ message: 'Server error during checkout' });
     }
 });
+
 
 module.exports = router;

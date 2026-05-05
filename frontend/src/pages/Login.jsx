@@ -75,20 +75,9 @@ const Login = () => {
               </form>
             </div>
             
-            <div className="auth-divider">
-              <span>OR</span>
-            </div>
-            
-            <div className="auth-social-section">
-              <div className="social-login-text">SIGN IN WITH</div>
-              <button className="btn-social google-placeholder" type="button">
-                Sign in with Google
-              </button>
-              
-              <div className="create-account-prompt">
-                Not a member?
-                <Link to="/register" className="join-link">Join GameVault</Link>
-              </div>
+            <div className="create-account-prompt">
+              Not a member?
+              <Link to="/register" className="join-link">Join GameVault</Link>
             </div>
           </div>
         </div>
